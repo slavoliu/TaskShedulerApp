@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="6dp"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="16dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <!-- Checkbox -->
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:buttonTint="@color/black"
+            android:paddingStart="8dp"
+            android:text="This is task 1" />
+
+        <!-- Start Time (left upper corner) -->
+        <TextView
+            android:id="@+id/startTimeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/checkbox"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="8dp"
+            android:text="Start: 9:00 AM" />
+
+        <!-- Activity (middle below) -->
+        <TextView
+            android:id="@+id/activityTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/checkbox"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="8dp"
+            android:text="Attend Meeting" />
+
+        <!-- End Time (right upper corner) -->
+        <TextView
+            android:id="@+id/endTimeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/checkbox"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="8dp"
+            android:text="End: 5:00 PM" />
+
+        <!-- Date (right end side) -->
+        <TextView
+            android:id="@+id/dateTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="150dp"
+            android:layout_marginTop="8dp"
+            android:layout_toEndOf="@+id/checkbox"
+            android:text="June 2, 2024" />
+
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>
