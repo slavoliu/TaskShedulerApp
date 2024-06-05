@@ -1,23 +1,15 @@
 package com.example.taskscheduler.Model;
 
 public class ToDoModel {
-
     private int id;
     private String task;
-    private int status;
     private String date;
     private String startTime;
     private String endTime;
     private String activity;
+    private int status;
 
-    public String getTask() {
-        return task;
-    }
-
-    public void setTask(String task) {
-        this.task = task;
-    }
-
+    // Getters and setters
     public int getId() {
         return id;
     }
@@ -26,12 +18,12 @@ public class ToDoModel {
         this.id = id;
     }
 
-    public int getStatus() {
-        return status;
+    public String getTask() {
+        return task;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
+    public void setTask(String task) {
+        this.task = task;
     }
 
     public String getDate() {
@@ -62,9 +54,15 @@ public class ToDoModel {
         return activity;
     }
 
-
-
     public void setActivity(String activity) {
-        this.activity=activity;
+        this.activity = activity;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 }

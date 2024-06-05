@@ -71,7 +71,7 @@ public class AddNewTask extends DialogFragment {
         });
 
         // Sample items for the dropdown menu
-        String[] activities = new String[]{"Sport", "Home", "Activity 3", "Activity 4"};
+        String[] activities = new String[]{"Personal Time", "Work/School"};
 
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, activities);
@@ -151,7 +151,7 @@ public class AddNewTask extends DialogFragment {
         // Refresh the data in the ProfileFragment
         ProfileFragment profileFragment = (ProfileFragment) getParentFragmentManager().findFragmentById(R.id.pieChart);
         if (profileFragment != null) {
-            profileFragment.setupPieChart();
+            profileFragment.setupPieChart(date);
         }
 
         // Refresh the data in the fragment

@@ -27,13 +27,20 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private static final String COL_6 = "END_TIME";
     private static final String COL_7 = "ACTIVITIES";
 
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(ID INTEGER PRIMARY KEY AUTOINCREMENT, TASK TEXT, STATUS INTEGER, DATE TEXT, START_TIME TEXT, END_TIME TEXT, ACTIVITIES TEXT)");
-    }
-
     public DataBaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, 1);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
+                COL_1 + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_2 + " TEXT, " +
+                COL_3 + " INTEGER, " +
+                COL_4 + " TEXT, " +
+                COL_5 + " TEXT, " +
+                COL_6 + " TEXT, " +
+                COL_7 + " TEXT)");
     }
 
     @Override
@@ -46,7 +53,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COL_2, model.getTask());
-        values.put(COL_3, 0);
+        values.put(COL_3, model.getStatus());
         values.put(COL_4, model.getDate());
         values.put(COL_5, model.getStartTime());
         values.put(COL_6, model.getEndTime());
@@ -54,10 +61,15 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_NAME, null, values);
     }
 
-    public void updateTask(int id, String task) {
+    public void updateTask(int id, String task, String date, String startTime, String endTime, String activity, int status) {
         db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COL_2, task);
+        values.put(COL_4, date);
+        values.put(COL_5, startTime);
+        values.put(COL_6, endTime);
+        values.put(COL_7, activity);
+        values.put(COL_3, status);
         db.update(TABLE_NAME, values, "ID=?", new String[]{String.valueOf(id)});
     }
 
@@ -76,9 +88,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     @SuppressLint("Range")
     public List<ToDoModel> getAllTasks() {
         db = this.getWritableDatabase();
-
-        Cursor cursor = null;
         List<ToDoModel> modelList = new ArrayList<>();
+        Cursor cursor = null;
 
         db.beginTransaction();
         try {
@@ -96,6 +107,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                     modelList.add(task);
                 } while (cursor.moveToNext());
             }
+            db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
             if (cursor != null) {
