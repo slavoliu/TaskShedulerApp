@@ -1,12 +1,14 @@
 package com.example.taskscheduler;
 
 import android.app.DatePickerDialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,20 +20,22 @@ import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.github.mikephil.charting.utils.ColorTemplate;
+import com.github.mikephil.charting.components.Legend;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 public class ProfileFragment extends Fragment {
 
     private PieChart pieChart;
     private DataBaseHelper myDB;
     private Button btnSelectDate;
+    private TextView sleepTimeTextView, evaluationTextView, workTimeTextView, personalTimeTextView;
     private Calendar calendar;
     private SimpleDateFormat dateFormat;
 
@@ -41,6 +45,10 @@ public class ProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
         pieChart = view.findViewById(R.id.pieChart);
         btnSelectDate = view.findViewById(R.id.btnSelectDate);
+        sleepTimeTextView = view.findViewById(R.id.sleepTimeTextView);
+        evaluationTextView = view.findViewById(R.id.evaluationTextView);
+        workTimeTextView = view.findViewById(R.id.workTimeTextView);
+        personalTimeTextView = view.findViewById(R.id.personalTimeTextView);
         myDB = new DataBaseHelper(getContext());
         calendar = Calendar.getInstance();
         dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -74,27 +82,93 @@ public class ProfileFragment extends Fragment {
         datePickerDialog.show();
     }
 
-    public void setupPieChart(String date) {
+    void setupPieChart(String date) {
         List<ToDoModel> tasks = myDB.getAllTasks();
 
-        Map<String, Integer> activityCount = new HashMap<>();
+        float workTime = 0;
+        float personalTime = 0;
+        float sleepTime = 8; // Default sleep time
+
         for (ToDoModel task : tasks) {
             if (task.getDate().equals(date)) {
-                String activity = task.getActivity();
-                activityCount.put(activity, activityCount.getOrDefault(activity, 0) + 1);
+                float startTime = Float.parseFloat(task.getStartTime().replace(":", "."));
+                float endTime = Float.parseFloat(task.getEndTime().replace(":", "."));
+                float duration = endTime - startTime;
+
+                if (task.getActivity().equalsIgnoreCase("work") || task.getActivity().equalsIgnoreCase("school")) {
+                    workTime += duration;
+                } else {
+                    personalTime += duration;
+                }
             }
         }
 
-        ArrayList<PieEntry> entries = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : activityCount.entrySet()) {
-            entries.add(new PieEntry(entry.getValue(), entry.getKey()));
+        if (workTime + personalTime > 16) {
+            sleepTime = 24 - (workTime + personalTime);
+        }
+
+        // Update TextViews
+        sleepTimeTextView.setText(String.format(Locale.getDefault(), "Sleep Time: %.1f hrs", sleepTime));
+        workTimeTextView.setText(String.format(Locale.getDefault(), "Work/School Time: %.1f hrs", workTime));
+        personalTimeTextView.setText(String.format(Locale.getDefault(), "Personal Time: %.1f hrs", personalTime));
+        if (workTime > 8 || personalTime > 8) {
+            evaluationTextView.setText("Evaluation: Bad for your program");
+        } else {
+            evaluationTextView.setText("Evaluation: Good for your program");
+        }
+
+        // Load PieChart data
+        loadPieChartData(workTime, personalTime, sleepTime);
+    }
+
+    private void loadPieChartData(float workTime, float personalTime, float sleepTime) {
+        List<PieEntry> entries = new ArrayList<>();
+        entries.add(new PieEntry(workTime, "Work/School"));
+        entries.add(new PieEntry(personalTime, "Personal"));
+        entries.add(new PieEntry(sleepTime, "Sleep"));
+
+        ArrayList<Integer> colors = new ArrayList<>();
+        for (int color : ColorTemplate.MATERIAL_COLORS) {
+            colors.add(color);
         }
 
         PieDataSet dataSet = new PieDataSet(entries, "Activities");
-        dataSet.setColors(CustomColorPallete.getColors()); // Use custom color palette
+        dataSet.setColors(colors);
 
         PieData data = new PieData(dataSet);
+        data.setValueFormatter(new PercentFormatter(pieChart));
+        data.setValueTextSize(12f);
+        data.setValueTextColor(Color.BLACK);
+
         pieChart.setData(data);
         pieChart.invalidate(); // refresh
+    }
+
+    private void setupPieChart() {
+        pieChart.setUsePercentValues(true);
+        pieChart.getDescription().setEnabled(false);
+        pieChart.setExtraOffsets(5, 10, 5, 5);
+
+        pieChart.setDragDecelerationFrictionCoef(0.95f);
+
+        pieChart.setDrawHoleEnabled(true);
+        pieChart.setHoleColor(Color.WHITE);
+        pieChart.setTransparentCircleRadius(61f);
+
+        pieChart.setEntryLabelColor(Color.BLACK);
+        pieChart.setEntryLabelTextSize(12f);
+
+        pieChart.setRotationAngle(0);
+        pieChart.setRotationEnabled(true);
+        pieChart.setHighlightPerTapEnabled(true);
+
+        Legend l = pieChart.getLegend();
+        l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
+        l.setOrientation(Legend.LegendOrientation.VERTICAL);
+        l.setDrawInside(false);
+        l.setXEntrySpace(7f);
+        l.setYEntrySpace(0f);
+        l.setYOffset(0f);
     }
 }

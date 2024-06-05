@@ -116,4 +116,36 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         }
         return modelList;
     }
+
+    @SuppressLint("Range")
+    public List<ToDoModel> getAllTasksForDate(String date) {
+        db = this.getWritableDatabase();
+        List<ToDoModel> modelList = new ArrayList<>();
+        Cursor cursor = null;
+
+        db.beginTransaction();
+        try {
+            cursor = db.query(TABLE_NAME, null, COL_4 + "=?", new String[]{date}, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    ToDoModel task = new ToDoModel();
+                    task.setId(cursor.getInt(cursor.getColumnIndex(COL_1)));
+                    task.setTask(cursor.getString(cursor.getColumnIndex(COL_2)));
+                    task.setStatus(cursor.getInt(cursor.getColumnIndex(COL_3)));
+                    task.setDate(cursor.getString(cursor.getColumnIndex(COL_4)));
+                    task.setStartTime(cursor.getString(cursor.getColumnIndex(COL_5)));
+                    task.setEndTime(cursor.getString(cursor.getColumnIndex(COL_6)));
+                    task.setActivity(cursor.getString(cursor.getColumnIndex(COL_7)));
+                    modelList.add(task);
+                } while (cursor.moveToNext());
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return modelList;
+    }
 }

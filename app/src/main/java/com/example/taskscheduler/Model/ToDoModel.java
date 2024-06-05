@@ -1,5 +1,10 @@
 package com.example.taskscheduler.Model;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class ToDoModel {
     private int id;
     private String task;
@@ -64,5 +69,20 @@ public class ToDoModel {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    // Helper method to get task duration in minutes
+    public int getDuration() {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        try {
+            Date start = sdf.parse(startTime);
+            Date end = sdf.parse(endTime);
+            if (start != null && end != null) {
+                return (int) ((end.getTime() - start.getTime()) / (1000 * 60));
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }
