@@ -18,10 +18,8 @@ import com.example.taskscheduler.Model.ToDoModel;
 import com.example.taskscheduler.R;
 import com.example.taskscheduler.Utils.DataBaseHelper;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+
 
 public class ToDoAdapter extends RecyclerView.Adapter<ToDoAdapter.MyViewHolder> {
 
@@ -68,12 +66,6 @@ public class ToDoAdapter extends RecyclerView.Adapter<ToDoAdapter.MyViewHolder> 
             AddNewTask task = AddNewTask.newInstance();
             task.setArguments(bundle);
             task.show(fragment.getChildFragmentManager(), "add_new_task");
-        });
-
-        // Set the "Today" button click listener to update the date EditText with today's date
-        holder.buttonToday.setOnClickListener(v -> {
-            String todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-            holder.editTextDate.setText(todayDate);
         });
     }
 
@@ -126,8 +118,6 @@ public class ToDoAdapter extends RecyclerView.Adapter<ToDoAdapter.MyViewHolder> 
             activityTextView = itemView.findViewById(R.id.activityTextView);
             endTimeTextView = itemView.findViewById(R.id.endTimeTextView);
             dateTextView = itemView.findViewById(R.id.dateTextView);
-            editTextDate = itemView.findViewById(R.id.editTextDate);
-            buttonToday = itemView.findViewById(R.id.checkbox_today);
         }
     }
 }

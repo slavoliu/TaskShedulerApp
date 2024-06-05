@@ -1,5 +1,4 @@
 package com.example.taskscheduler;
-import static java.io.File.separator;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -10,7 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,18 +19,15 @@ import androidx.fragment.app.DialogFragment;
 
 import com.example.taskscheduler.Model.ToDoModel;
 import com.example.taskscheduler.OnDialogCloseListener;
-import com.example.taskscheduler.R;
 import com.example.taskscheduler.Utils.DataBaseHelper;
 import com.google.android.material.textfield.TextInputEditText;
-
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 public class AddNewTask extends DialogFragment {
 
     public static final String TAG = "add_new_task";
 
-    private TextInputEditText taskEditText, dateEditText, startTimeEditText, endTimeEditText, activityEditText;
+    private TextInputEditText taskEditText, dateEditText, startTimeEditText, endTimeEditText;
+    private Spinner activitySpinner;
     private Button saveButton, cancelButton;
 
     private DataBaseHelper myDB;
@@ -52,7 +50,7 @@ public class AddNewTask extends DialogFragment {
         dateEditText = view.findViewById(R.id.editTextDate);
         startTimeEditText = view.findViewById(R.id.editTextStartTime);
         endTimeEditText = view.findViewById(R.id.editTextEndTime);
-        activityEditText = view.findViewById(R.id.editTextActivity);
+        activitySpinner = view.findViewById(R.id.spinnerActivity);
         saveButton = view.findViewById(R.id.button_save);
         cancelButton = view.findViewById(R.id.button_cancel);
 
@@ -71,6 +69,16 @@ public class AddNewTask extends DialogFragment {
                 dismiss();
             }
         });
+
+        // Sample items for the dropdown menu
+        String[] activities = new String[]{"Sport", "Home", "Activity 3", "Activity 4"};
+
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, activities);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // Set the adapter to the Spinner
+        activitySpinner.setAdapter(adapter);
 
         // Listen for changes in date EditText
         dateEditText.addTextChangedListener(new TextWatcher() {
@@ -122,7 +130,7 @@ public class AddNewTask extends DialogFragment {
         String date = dateEditText.getText().toString();
         String startTime = startTimeEditText.getText().toString();
         String endTime = endTimeEditText.getText().toString();
-        String activity = activityEditText.getText().toString();
+        String activity = activitySpinner.getSelectedItem().toString();
 
         // Check if any field is empty
         if (task.isEmpty() || date.isEmpty() || startTime.isEmpty() || endTime.isEmpty() || activity.isEmpty()) {
@@ -140,6 +148,12 @@ public class AddNewTask extends DialogFragment {
         item.setStatus(0); // Assuming the default status is 0
         myDB.insertTask(item);
 
+        // Refresh the data in the ProfileFragment
+        ProfileFragment profileFragment = (ProfileFragment) getParentFragmentManager().findFragmentById(R.id.pieChart);
+        if (profileFragment != null) {
+            profileFragment.setupPieChart();
+        }
+
         // Refresh the data in the fragment
         if (dialogCloseListener != null) {
             dialogCloseListener.onDialogClose(getDialog());
@@ -147,6 +161,8 @@ public class AddNewTask extends DialogFragment {
 
         dismiss();
     }
+
+
 
     private void formatDateTimeInput(Editable s, TextInputEditText editText, String format) {
         String input = s.toString();
@@ -180,7 +196,6 @@ public class AddNewTask extends DialogFragment {
             }
         }
     }
-
 
     @NonNull
     @Override
