@@ -4,9 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,11 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.taskscheduler.AddNewTask;
 import com.example.taskscheduler.Model.ToDoModel;
+import com.example.taskscheduler.OnDialogCloseListener;
 import com.example.taskscheduler.R;
 import com.example.taskscheduler.Utils.DataBaseHelper;
 
 import java.util.List;
-
 
 public class ToDoAdapter extends RecyclerView.Adapter<ToDoAdapter.MyViewHolder> {
 
@@ -59,13 +57,9 @@ public class ToDoAdapter extends RecyclerView.Adapter<ToDoAdapter.MyViewHolder> 
         holder.dateTextView.setText(item.getDate());
 
         holder.itemView.setOnClickListener(v -> {
-            Bundle bundle = new Bundle();
-            bundle.putInt("id", item.getId());
-            bundle.putString("task", item.getTask());
-
-            AddNewTask task = AddNewTask.newInstance();
-            task.setArguments(bundle);
-            task.show(fragment.getChildFragmentManager(), "add_new_task");
+            AddNewTask dialog = AddNewTask.newInstance(item);
+            dialog.setOnDialogCloseListener((OnDialogCloseListener) fragment);
+            dialog.show(fragment.getChildFragmentManager(), AddNewTask.TAG);
         });
     }
 
@@ -87,14 +81,9 @@ public class ToDoAdapter extends RecyclerView.Adapter<ToDoAdapter.MyViewHolder> 
 
     public void editItem(int position) {
         ToDoModel item = mList.get(position);
-
-        Bundle bundle = new Bundle();
-        bundle.putInt("id", item.getId());
-        bundle.putString("task", item.getTask());
-
-        AddNewTask task = new AddNewTask();
-        task.setArguments(bundle);
-        task.show(fragment.getActivity().getSupportFragmentManager(), "add_new_task");
+        AddNewTask dialog = AddNewTask.newInstance(item);
+        dialog.setOnDialogCloseListener((OnDialogCloseListener) fragment);
+        dialog.show(fragment.getChildFragmentManager(), AddNewTask.TAG);
     }
 
     @Override
@@ -108,8 +97,6 @@ public class ToDoAdapter extends RecyclerView.Adapter<ToDoAdapter.MyViewHolder> 
         TextView activityTextView;
         TextView endTimeTextView;
         TextView dateTextView;
-        EditText editTextDate;
-        Button buttonToday;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);

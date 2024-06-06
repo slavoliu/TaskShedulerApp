@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
 
 public class ProfileFragment extends Fragment {
 
@@ -83,57 +85,32 @@ public class ProfileFragment extends Fragment {
     }
 
     void setupPieChart(String date) {
-        List<ToDoModel> tasks = myDB.getAllTasks();
+        List<ToDoModel> tasks = myDB.getAllTasksForDate(date);
 
-        float workTime = 0;
-        float personalTime = 0;
-        float sleepTime = 8; // Default sleep time
-
+        Map<String, Integer> activityCount = new HashMap<>();
         for (ToDoModel task : tasks) {
-            if (task.getDate().equals(date)) {
-                float startTime = Float.parseFloat(task.getStartTime().replace(":", "."));
-                float endTime = Float.parseFloat(task.getEndTime().replace(":", "."));
-                float duration = endTime - startTime;
+            String activity = task.getActivity();
+            activityCount.put(activity, activityCount.getOrDefault(activity, 0) + task.getDuration());
+        }
 
-                if (task.getActivity().equalsIgnoreCase("work") || task.getActivity().equalsIgnoreCase("school")) {
-                    workTime += duration;
-                } else {
-                    personalTime += duration;
-                }
+        ArrayList<PieEntry> entries = new ArrayList<>();
+        int personalTime = 0;
+        int workSchoolTime = 0;
+
+        for (Map.Entry<String, Integer> entry : activityCount.entrySet()) {
+            String activity = entry.getKey();
+            int minutes = entry.getValue();
+            entries.add(new PieEntry(minutes, activity));
+
+            if (activity.equalsIgnoreCase("Personal Time")) {
+                personalTime += minutes;
+            } else if (activity.equalsIgnoreCase("Work/School")) {
+                workSchoolTime += minutes;
             }
         }
 
-        if (workTime + personalTime > 16) {
-            sleepTime = 24 - (workTime + personalTime);
-        }
-
-        // Update TextViews
-        sleepTimeTextView.setText(String.format(Locale.getDefault(), "Sleep Time: %.1f hrs", sleepTime));
-        workTimeTextView.setText(String.format(Locale.getDefault(), "Work/School Time: %.1f hrs", workTime));
-        personalTimeTextView.setText(String.format(Locale.getDefault(), "Personal Time: %.1f hrs", personalTime));
-        if (workTime > 8 || personalTime > 8) {
-            evaluationTextView.setText("Evaluation: Bad for your program");
-        } else {
-            evaluationTextView.setText("Evaluation: Good for your program");
-        }
-
-        // Load PieChart data
-        loadPieChartData(workTime, personalTime, sleepTime);
-    }
-
-    private void loadPieChartData(float workTime, float personalTime, float sleepTime) {
-        List<PieEntry> entries = new ArrayList<>();
-        entries.add(new PieEntry(workTime, "Work/School"));
-        entries.add(new PieEntry(personalTime, "Personal"));
-        entries.add(new PieEntry(sleepTime, "Sleep"));
-
-        ArrayList<Integer> colors = new ArrayList<>();
-        for (int color : ColorTemplate.MATERIAL_COLORS) {
-            colors.add(color);
-        }
-
         PieDataSet dataSet = new PieDataSet(entries, "Activities");
-        dataSet.setColors(colors);
+        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
 
         PieData data = new PieData(dataSet);
         data.setValueFormatter(new PercentFormatter(pieChart));
@@ -142,6 +119,53 @@ public class ProfileFragment extends Fragment {
 
         pieChart.setData(data);
         pieChart.invalidate(); // refresh
+
+        int sleepTime = calculateSleepTime(personalTime, workSchoolTime);
+        displaySleepTime(sleepTime);
+        evaluateSchedule(personalTime, workSchoolTime, sleepTime);
+        displayActivityTimes(personalTime, workSchoolTime);
+    }
+
+    private int calculateSleepTime(int personalTime, int workSchoolTime) {
+        int totalActivityTime = personalTime + workSchoolTime;
+        if (totalActivityTime <= 16 * 60) {
+            return 8 * 60; // 8 hours in minutes
+        } else {
+            int extraTime = totalActivityTime - 16 * 60;
+            return (8 * 60) - extraTime;
+        }
+    }
+
+    private void displaySleepTime(int sleepTime) {
+        int hours = sleepTime / 60;
+        int minutes = sleepTime % 60;
+        String sleepTimeString = String.format("Sleep Time: %d hrs %d mins", hours, minutes);
+        sleepTimeTextView.setText(sleepTimeString);
+    }
+
+    private void evaluateSchedule(int personalTime, int workSchoolTime, int sleepTime) {
+        String evaluation;
+        int sleepHours = sleepTime / 60;
+        if (sleepHours >= 7 && sleepHours <= 9) {
+            evaluation = "Your sleep schedule is good!";
+        } else if (workSchoolTime > 480 || personalTime > 480) {
+            evaluation = "Your schedule might be bad for your health.";
+        } else {
+            evaluation = "Consider adjusting your schedule for better sleep.";
+        }
+        evaluationTextView.setText(evaluation);
+    }
+
+    private void displayActivityTimes(int personalTime, int workSchoolTime) {
+        int personalHours = personalTime / 60;
+        int personalMinutes = personalTime % 60;
+        String personalTimeString = String.format("Personal Time: %d hrs %d mins", personalHours, personalMinutes);
+        personalTimeTextView.setText(personalTimeString);
+
+        int workHours = workSchoolTime / 60;
+        int workMinutes = workSchoolTime % 60;
+        String workTimeString = String.format("Work/School Time: %d hrs %d mins", workHours, workMinutes);
+        workTimeTextView.setText(workTimeString);
     }
 
     private void setupPieChart() {

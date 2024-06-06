@@ -1,7 +1,6 @@
 package com.example.taskscheduler;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -33,6 +32,23 @@ public class AddNewTask extends DialogFragment {
     private DataBaseHelper myDB;
     private OnDialogCloseListener dialogCloseListener;
 
+    private int taskId = -1; // Default to -1 to indicate a new task
+
+    public static AddNewTask newInstance(ToDoModel task) {
+        AddNewTask fragment = new AddNewTask();
+        Bundle args = new Bundle();
+        if (task != null) {
+            args.putInt("task_id", task.getId());
+            args.putString("task_activity", task.getActivity());
+            args.putString("task_start_time", task.getStartTime());
+            args.putString("task_end_time", task.getEndTime());
+            args.putString("task_date", task.getDate());
+            args.putString("task_description", task.getTask());
+        }
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     public static AddNewTask newInstance() {
         return new AddNewTask();
     }
@@ -56,6 +72,31 @@ public class AddNewTask extends DialogFragment {
 
         myDB = new DataBaseHelper(getActivity());
 
+        // Sample items for the dropdown menu
+        String[] activities = new String[]{"Personal Time", "Work/School"};
+
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, activities);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // Set the adapter to the Spinner
+        activitySpinner.setAdapter(adapter);
+
+        // Retrieve task data if available
+        Bundle args = getArguments();
+        if (args != null) {
+            taskId = args.getInt("task_id", -1);
+            taskEditText.setText(args.getString("task_description", ""));
+            dateEditText.setText(args.getString("task_date", ""));
+            startTimeEditText.setText(args.getString("task_start_time", ""));
+            endTimeEditText.setText(args.getString("task_end_time", ""));
+            String activity = args.getString("task_activity", "");
+            if (!activity.isEmpty()) {
+                int spinnerPosition = adapter.getPosition(activity);
+                activitySpinner.setSelection(spinnerPosition);
+            }
+        }
+
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -69,16 +110,6 @@ public class AddNewTask extends DialogFragment {
                 dismiss();
             }
         });
-
-        // Sample items for the dropdown menu
-        String[] activities = new String[]{"Personal Time", "Work/School"};
-
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, activities);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        // Set the adapter to the Spinner
-        activitySpinner.setAdapter(adapter);
 
         // Listen for changes in date EditText
         dateEditText.addTextChangedListener(new TextWatcher() {
@@ -138,7 +169,6 @@ public class AddNewTask extends DialogFragment {
             return;
         }
 
-        // Save task to database
         ToDoModel item = new ToDoModel();
         item.setTask(task);
         item.setDate(date);
@@ -146,7 +176,15 @@ public class AddNewTask extends DialogFragment {
         item.setEndTime(endTime);
         item.setActivity(activity);
         item.setStatus(0); // Assuming the default status is 0
-        myDB.insertTask(item);
+
+        if (taskId == -1) {
+            // New task
+            myDB.insertTask(item);
+        } else {
+            // Update existing task
+            item.setId(taskId);
+            myDB.updateTask(item);
+        }
 
         // Refresh the data in the ProfileFragment
         ProfileFragment profileFragment = (ProfileFragment) getParentFragmentManager().findFragmentById(R.id.pieChart);
@@ -161,8 +199,6 @@ public class AddNewTask extends DialogFragment {
 
         dismiss();
     }
-
-
 
     private void formatDateTimeInput(Editable s, TextInputEditText editText, String format) {
         String input = s.toString();
@@ -212,4 +248,6 @@ public class AddNewTask extends DialogFragment {
             getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
     }
+
+
 }

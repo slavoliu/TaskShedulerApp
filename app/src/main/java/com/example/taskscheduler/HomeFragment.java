@@ -18,7 +18,6 @@ import com.example.taskscheduler.Model.ToDoModel;
 import com.example.taskscheduler.Utils.DataBaseHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-
 import java.util.List;
 
 public class HomeFragment extends Fragment implements OnDialogCloseListener {

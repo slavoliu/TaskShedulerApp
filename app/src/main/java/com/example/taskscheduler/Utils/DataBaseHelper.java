@@ -61,28 +61,30 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_NAME, null, values);
     }
 
-    public void updateTask(int id, String task, String date, String startTime, String endTime, String activity, int status) {
+    public boolean updateTask(ToDoModel task) {
         db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(COL_2, task);
-        values.put(COL_4, date);
-        values.put(COL_5, startTime);
-        values.put(COL_6, endTime);
-        values.put(COL_7, activity);
-        values.put(COL_3, status);
-        db.update(TABLE_NAME, values, "ID=?", new String[]{String.valueOf(id)});
+        values.put(COL_2, task.getTask());
+        values.put(COL_4, task.getDate());
+        values.put(COL_5, task.getStartTime());
+        values.put(COL_6, task.getEndTime());
+        values.put(COL_7, task.getActivity());
+        values.put(COL_3, task.getStatus());
+
+        int result = db.update(TABLE_NAME, values, COL_1 + "=?", new String[]{String.valueOf(task.getId())});
+        return result > 0;
     }
 
     public void updateStatus(int id, int status) {
         db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COL_3, status);
-        db.update(TABLE_NAME, values, "ID=?", new String[]{String.valueOf(id)});
+        db.update(TABLE_NAME, values, COL_1 + "=?", new String[]{String.valueOf(id)});
     }
 
     public void deleteTask(int id) {
         db = this.getWritableDatabase();
-        db.delete(TABLE_NAME, "ID=?", new String[]{String.valueOf(id)});
+        db.delete(TABLE_NAME, COL_1 + "=?", new String[]{String.valueOf(id)});
     }
 
     @SuppressLint("Range")
